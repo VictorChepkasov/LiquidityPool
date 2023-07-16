@@ -50,7 +50,9 @@ contract LiquidityPool {
             toAmount = (fromAmount * 1 ether) / exchangeRate;
         }
 
-        fromToken.transferFrom(msg.sender, address(this), toAmount);
-        toToken.transfer(msg.sender, toAmount);
+        bool txFromTokenResult = fromToken.transferFrom(msg.sender, address(this), toAmount);
+        require(txFromTokenResult, "Transfer failed!");
+        bool txToTokenResult = toToken.transfer(msg.sender, toAmount);
+        require(txToTokenResult, "Transfer failed!")
     }
 }
