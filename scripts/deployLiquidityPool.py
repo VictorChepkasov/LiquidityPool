@@ -3,10 +3,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def main():
-    acc = accounts[0]
-    deployLiquidityPool(acc)
-
 def deployLiquidityPool(_from):
     deployed = LiquidityPool.deploy(_from, _from, {
         'from': _from,

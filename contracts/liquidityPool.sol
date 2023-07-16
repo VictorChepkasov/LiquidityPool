@@ -26,12 +26,6 @@ contract LiquidityPool {
         require(txResult, "Transfer failed!");
     }
 
-    function getExchangeRate() public view returns(uint) {
-        uint ethBalance = eth.balanceOf(address(this));
-        uint inchBalance = inch.balanceOf(address(this));
-        return (inchBalance * 1 ether) / ethBalance;
-    }
-
     function exchange(ERC20 fromToken, ERC20 toToken, uint fromAmount) public {
         require(fromToken == eth || fromToken == inch, "Invailid fromToken!");
         require(toToken == eth || toToken == inch, "Invailid toToken!");
@@ -52,5 +46,11 @@ contract LiquidityPool {
         require(txFromTokenResult, "Transfer failed!");
         bool txToTokenResult = toToken.transfer(msg.sender, toAmount);
         require(txToTokenResult, "Transfer failed!");
+    }
+    
+    function getExchangeRate() public view returns(uint) {
+        uint ethBalance = eth.balanceOf(address(this));
+        uint inchBalance = inch.balanceOf(address(this));
+        return (inchBalance * 1 ether) / ethBalance;
     }
 }
