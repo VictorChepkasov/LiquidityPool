@@ -17,4 +17,40 @@ contract LiquidityPool {
         eth = _eth;
         inch = _inch;
     }
+
+    function createDeposit(ERC20 token, uint amount) public {
+        bool txResult = token.transferFrom(msg.sender, address(this), amount);
+        require(txResult, "Transfer failed!");
+    }
+
+    function withdraw(ERC20 token, uint amount) public {
+        bool txResult = token.transfer(msg.sender, amount);
+        require(txResult, "Transfer failed!");
+    }
+
+    function getExchangeRate() public view returns(uint) {
+        uint ethBalance = eth.balanceOf(address(this));
+        uint inchBalance = inch.balanceOf(address(this));
+        return (inchBalance * 1 ether) / ethBalance;
+    }
+
+    function exchange(ERC20 fromToken, ERC20 toToken, uint fromAmount) public {
+        require(fromToken == eth || fromToken == inch, "Invailid fromToken!");
+        require(toToken == eth || toToken == inch, "Invailid toToken!");
+
+        uint fromTokenBalance = fromToken.balanceOf(address(this));
+        uint toTokenBalance = toToken.balanceOf(address(this));
+        require(fromTokenBalance >= toTokenBalance, "You don't have money :(");
+
+        uint exchangeRate = getExchangeRate();
+        uint toAmount;
+        if (fromToken == eth) {
+            toAmount = (fromAmount * exchangeRate) / 1 ether;
+        } else {
+            toAmount = (fromAmount * 1 ether) / exchangeRate;
+        }
+
+        fromToken.transferFrom(msg.sender, address(this), toAmount);
+        toToken.transfer(msg.sender, toAmount);
+    }
 }
