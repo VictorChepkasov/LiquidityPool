@@ -1,5 +1,5 @@
 from brownie import accounts, LiquidityPool
-from .scripts.deployLiquidityPool import deployLiquidityPool as deploy
+from scripts.deployLiquidityPool import deployLiquidityPool as deploy
 
 def createDeposit(_from, _token, _amount):
     LiquidityPool[-1].createDeposit(_token, _amount, {

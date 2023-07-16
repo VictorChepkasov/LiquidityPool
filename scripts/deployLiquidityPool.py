@@ -3,8 +3,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def deployLiquidityPool(_from):
-    deployed = LiquidityPool.deploy(_from, _from, {
+def deployLiquidityPool(_from, _eth, _inch):
+    deployed = LiquidityPool.deploy(_eth, _inch, {
         'from': _from,
         'priority_fee': '10 wei'
     })
