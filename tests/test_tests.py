@@ -1,6 +1,6 @@
 import pytest
 from brownie import accounts
-from scripts.deployLiquidityPool import deployLiquidityPool as deploy
+from scripts.deployPool import deployLiquidityPool as deploy
 from scripts.liquidityPoolScripts import (
     createDeposit,
     withdraw,
