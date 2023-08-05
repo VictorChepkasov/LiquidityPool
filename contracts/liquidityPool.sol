@@ -7,7 +7,7 @@ contract LiquidityPool {
     using SafeERC20 for ERC20;
 
     ERC20 public eth;
-    ERC20 public myToken; //1myToken - агрегатор ликвидности
+    ERC20 public myToken;
 
     constructor(ERC20 _eth, ERC20 _myToken) {
         eth = _eth;
