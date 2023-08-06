@@ -35,17 +35,18 @@ def test_createDeposit(ownerAndFactory, testToken, amountToBuy, deposit):
     assert testToken.balanceOf(owner) == ownerTokenBalance - deposit
     assert testToken.balanceOf(pool.address) == poolBalance + deposit
 
-# @pytest.mark.parametrize('deposit', amountToBuyMark)
-# def test_withdraw(ownerAndFactory, testToken, deposit):
-#     owner, myToken = ownerAndFactory
-#     buyTokens(owner, myToken.address, deposit)
-#     pool = deployLiquidityPool(owner, owner, myToken.token())
-#     poolBalance = testToken.balanceOf(pool.address)
-#     ownerTokenBalance = testToken.balanceOf(owner)
+@pytest.mark.parametrize('deposit', amountToBuyMark)
+def test_withdraw(ownerAndFactory, testToken, deposit):
+    owner, myToken = ownerAndFactory
+    buyTokens(owner, myToken.address, deposit)
+    pool = deployLiquidityPool(owner, owner, myToken.token())
     
-#     approve(testToken, pool.address, deposit, owner)
-#     createDeposit(owner, myToken.token(), deposit)
-#     withdraw(owner, myToken.address, deposit)
+    approve(testToken, pool.address, deposit, owner)
+    createDeposit(owner, myToken.token(), deposit)
+    ownerTokenBalance = testToken.balanceOf(owner)
+    poolBalance = testToken.balanceOf(pool.address)
+    withdraw(owner, myToken.token(), deposit)
 
-#     assert testToken.balanceOf(owner) == ownerTokenBalance + deposit
-#     assert testToken.balanceOf(pool.address) == poolBalance - deposit
+    assert testToken.balanceOf(owner) == ownerTokenBalance + deposit
+    assert testToken.balanceOf(pool.address) == poolBalance - deposit
+
