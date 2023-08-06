@@ -10,7 +10,7 @@ def main():
     owner.transfer(myToken.address, '100 wei', priority_fee='1 wei')
     etherTestToken = EtherTestToken.at(myToken.token())
     print(f'Token balance: {myToken.tokenBalance()}')
-    print(f'Owner balance: {etherTestToken.balanceOf(owner)}')
+    print(f'Owner balance: {etherTestToken.balanceOf(owner)}\n')
     deployLiquidityPool(owner, owner, myToken.token())
 
 def deployLiquidityPool(_from, _eth, _myToken):

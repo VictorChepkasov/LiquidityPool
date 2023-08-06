@@ -1,6 +1,8 @@
 import pytest
-from brownie import accounts
-from scripts.deployPool import deployLiquidityPool as deploy
+from brownie import accounts, EtherTestToken
+from test_token import depositMark
+from scripts.deployToken import deployToken
+from scripts.deployPool import deployLiquidityPool
 from scripts.scriptsPool import (
     createDeposit,
     withdraw,
@@ -8,20 +10,29 @@ from scripts.scriptsPool import (
     getExchangeRate
 )
 
-@pytest.fixture()
-def importAccounts():
-    _from = accounts[0]
-    eth = accounts[0]
-    myToken = accounts[0]
-    contract = deploy(_from, eth, myToken)
-    return _from, eth, myToken, contract
+@pytest.mark.parametrize('deposit', depositMark)
+def test_deployPool(deposit):
+    owner = accounts[0]
+    myToken = deployToken(owner)
+    owner.transfer(myToken.address, f'{deposit} wei', priority_fee='10 wei')
 
-def test_createDeposit(importAccounts, amount=100):
-    _from, _eth, _myToken, _contract = importAccounts
-    createDeposit(_from, _eth, amount)
-    ethBalance = _eth.balanceOf(_contract)
-    assert ethBalance == amount
+    deployed = deployLiquidityPool(owner, owner, myToken.token())
 
-# def test_exchangeRate(importAccounts, amount=100):
-#     _from, _eth, _myToken, _contract = importAccounts
-    
+    assert str(deployed.address) != '0'
+
+def test_createDeposit(deposit=100, amount=50):
+    owner = accounts[0]
+    myToken = deployToken(owner)
+    owner.transfer(myToken.address, f'{deposit} wei', priority_fee='10 wei')
+    deployed = deployLiquidityPool(owner, owner, myToken.token())
+    testToken = EtherTestToken.at(myToken.token())
+    ownerTokenBalance = testToken.balanceOf(owner)
+
+    testToken.approve(deployed.address, amount, {
+        'from': owner,
+        'priority_fee': '1 wei'
+    })
+    createDeposit(owner, myToken.token(), amount)
+
+    assert testToken.balanceOf(owner) == ownerTokenBalance - amount
+    assert testToken.balanceOf(deployed.address) == amount
