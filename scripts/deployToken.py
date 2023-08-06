@@ -9,5 +9,5 @@ def deployToken(_from):
         'from': _from,
         'priority_fee': '10 wei'
     })
-    print(f'Factory deployed at: {deployed}')
+    print(f'Factory deployed at: {deployed}\n')
     return deployed

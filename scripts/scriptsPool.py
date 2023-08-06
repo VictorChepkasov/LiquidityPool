@@ -26,3 +26,11 @@ def getExchangeRate(_from):
         'priority_fee': '10 wei'
     })
     return exchangeRate
+
+
+# myToken = deployToken(accounts[0])
+#     owner.transfer(myToken.address, '100 wei', priority_fee='1 wei')
+#     etherTestToken = EtherTestToken.at(myToken.token())
+#     print(f'Token balance: {myToken.tokenBalance()}')
+#     print(f'Owner balance: {etherTestToken.balanceOf(owner)}')
+#     deployLiquidityPool(owner, owner, myToken.token())
