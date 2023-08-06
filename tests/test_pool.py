@@ -1,22 +1,22 @@
 import pytest
-from brownie import accounts, EtherTestToken
-from test_token import amountToBuyMark, ownerAndFactory, testToken, buyTokens
+from test_token import amountToBuyMark, ownerAndFactory, testToken
 from scripts.deployPool import deployLiquidityPool
 from scripts.scriptsPool import (
     createDeposit,
     withdraw,
     exchange,
-    getExchangeRate
+    getExchangeRate,
+    buyTokens,
+    approve
 )
 
 @pytest.mark.parametrize('amountToBuy', amountToBuyMark)
 def test_deployPool(ownerAndFactory, amountToBuy):
     owner, myToken = ownerAndFactory
     buyTokens(owner, myToken.address, amountToBuy)
+    pool = deployLiquidityPool(owner, owner, myToken.token())
 
-    deployed = deployLiquidityPool(owner, owner, myToken.token())
-
-    assert str(deployed.address) != '0'
+    assert str(pool.address) != '0'
 
 @pytest.mark.parametrize(
         'amountToBuy, deposit',
@@ -25,18 +25,27 @@ def test_deployPool(ownerAndFactory, amountToBuy):
 def test_createDeposit(ownerAndFactory, testToken, amountToBuy, deposit):
     owner, myToken = ownerAndFactory
     buyTokens(owner, myToken.address, amountToBuy)
-    deployed = deployLiquidityPool(owner, owner, myToken.token())
+    pool = deployLiquidityPool(owner, owner, myToken.token())
     ownerTokenBalance = testToken.balanceOf(owner)
+    poolBalance = testToken.balanceOf(pool.address)
 
-    testToken.approve(deployed.address, deposit, {
-        'from': owner,
-        'priority_fee': '1 wei'
-    })
+    approve(testToken, pool.address, deposit, owner)
     createDeposit(owner, myToken.token(), deposit)
 
     assert testToken.balanceOf(owner) == ownerTokenBalance - deposit
-    assert testToken.balanceOf(deployed.address) == deposit
+    assert testToken.balanceOf(pool.address) == poolBalance + deposit
 
-# @pytest.mark.parametrize('deposit', depositMark)
+# @pytest.mark.parametrize('deposit', amountToBuyMark)
 # def test_withdraw(ownerAndFactory, testToken, deposit):
 #     owner, myToken = ownerAndFactory
+#     buyTokens(owner, myToken.address, deposit)
+#     pool = deployLiquidityPool(owner, owner, myToken.token())
+#     poolBalance = testToken.balanceOf(pool.address)
+#     ownerTokenBalance = testToken.balanceOf(owner)
+    
+#     approve(testToken, pool.address, deposit, owner)
+#     createDeposit(owner, myToken.token(), deposit)
+#     withdraw(owner, myToken.address, deposit)
+
+#     assert testToken.balanceOf(owner) == ownerTokenBalance + deposit
+#     assert testToken.balanceOf(pool.address) == poolBalance - deposit

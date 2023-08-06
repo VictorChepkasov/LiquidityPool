@@ -26,3 +26,12 @@ def getExchangeRate(_from):
         'priority_fee': '10 wei'
     })
     return exchangeRate
+
+def buyTokens(_from, _tokenAddress, _amountToBuy):
+    _from.transfer(_tokenAddress, f'{_amountToBuy} wei', priority_fee='10 wei')
+
+def approve(_token, _spenderAddress, _amount, _from):
+    _token.approve(_spenderAddress, _amount, {
+        'from': _from,
+        'priority_fee': '1 wei'
+    })
