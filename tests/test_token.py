@@ -2,7 +2,7 @@ import pytest
 from brownie import accounts, EtherTestToken
 from scripts.deployToken import deployToken
 
-depositMark = [pytest.param(0, marks=pytest.mark.xfail), 10, 1000, pytest.param(100000, marks=pytest.mark.xfail)]
+amountToBuyMark = [pytest.param(0, marks=pytest.mark.xfail), 10, 1000, pytest.param(100000, marks=pytest.mark.xfail)]
 
 @pytest.fixture()
 def ownerAndFactory():
@@ -14,12 +14,15 @@ def testToken(ownerAndFactory):
     _, myToken = ownerAndFactory
     return EtherTestToken.at(myToken.token())
 
-@pytest.mark.parametrize('amountToBuy', depositMark)
+def buyTokens(_from, _tokenAddress, _amountToBuy):
+    _from.transfer(_tokenAddress, f'{_amountToBuy} wei', priority_fee='10 wei')
+
+@pytest.mark.parametrize('amountToBuy', amountToBuyMark)
 def test_buyingToken(ownerAndFactory, testToken, amountToBuy):
     owner, myToken = ownerAndFactory
     ownerBalance = owner.balance()
 
-    owner.transfer(myToken.address, f'{amountToBuy} wei', priority_fee='10 wei')
+    buyTokens(owner, myToken.address, amountToBuy)
     tokenBalance = myToken.tokenBalance()
     ownerTokenBalance = testToken.balanceOf(owner)
 
@@ -27,10 +30,10 @@ def test_buyingToken(ownerAndFactory, testToken, amountToBuy):
     assert ownerTokenBalance == amountToBuy
     assert owner.balance() <= ownerBalance
 
-@pytest.mark.parametrize('deposit', depositMark)
-def test_sellingToken(ownerAndFactory, testToken, deposit, amountToSell=9):
+@pytest.mark.parametrize('amountToBuy', amountToBuyMark)
+def test_sellingToken(ownerAndFactory, testToken, amountToBuy, amountToSell=9):
     owner, myToken = ownerAndFactory
-    owner.transfer(myToken.address, f'{deposit} wei', priority_fee='1 wei')
+    buyTokens(owner, myToken.address, amountToBuy)
     
     testToken.approve(myToken.address, amountToSell, {
         'from': owner,
