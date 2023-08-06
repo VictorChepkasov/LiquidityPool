@@ -1,7 +1,7 @@
 from brownie import accounts, LiquidityPool, EtherTestToken
 from dotenv import load_dotenv
 from scripts.deployToken import deployToken
-from scripts.liquidityPoolScripts import createDeposit
+from scripts.scriptsPool import createDeposit
 
 load_dotenv()
 
