@@ -25,13 +25,21 @@ contract LiquidityPool {
     }
 
     function exchange(ERC20 fromToken, ERC20 toToken, uint fromAmount) public {
-        require(fromToken == eth || fromToken == myToken, "Invailid fromToken!");
-        require(toToken == eth || toToken == myToken, "Invailid toToken!");
+        require(
+            fromToken == eth || fromToken == myToken, 
+            "Invailid fromToken!"
+        );
+        require(
+            toToken == eth || toToken == myToken,
+            "Invailid toToken!"
+        );
 
         uint fromTokenBalance = fromToken.balanceOf(address(this));
         uint toTokenBalance = toToken.balanceOf(address(this));
-        require(fromTokenBalance >= toTokenBalance,
-            "You don't have money :(");
+        require(
+            fromTokenBalance >= toTokenBalance,
+            "You don't have money :("
+        );
 
         uint exchangeRate = getExchangeRate();
         uint toAmount = fromToken == eth ? (fromAmount * exchangeRate) / 1 ether : (fromAmount * 1 ether) / exchangeRate;
