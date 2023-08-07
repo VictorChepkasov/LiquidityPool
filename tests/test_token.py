@@ -23,7 +23,7 @@ def wethToken(ownerAndFactories):
 
 @pytest.mark.parametrize('amountToBuy', amountToBuyMark)
 def test_buyingToken(ownerAndFactories, testToken, amountToBuy):
-    owner, myToken = ownerAndFactories
+    owner, myToken, weth = ownerAndFactories
     ownerBalance = owner.balance()
 
     buyTokens(owner, myToken.address, amountToBuy)
@@ -36,7 +36,7 @@ def test_buyingToken(ownerAndFactories, testToken, amountToBuy):
 
 @pytest.mark.parametrize('amountToBuy', amountToBuyMark)
 def test_sellingToken(ownerAndFactories, testToken, amountToBuy, amountToSell=9):
-    owner, myToken = ownerAndFactories
+    owner, myToken, weth = ownerAndFactories
     buyTokens(owner, myToken.address, amountToBuy)
     
     approve(testToken, myToken.address, amountToSell, owner)
