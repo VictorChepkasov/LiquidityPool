@@ -17,8 +17,8 @@ def test_minting(env, amount):
     ownerBalnace = wethToken.balanceOf(owner)
     totalSupply = wethToken.totalSupply()
     buyTokens(owner, weth.address, amount)
-    assert totalSupply == wethToken.totalSupply() - amount
     assert ownerBalnace + amount == wethToken.balanceOf(owner)
+    assert totalSupply + amount == wethToken.totalSupply() 
 
 @pytest.mark.parametrize('amount', amountMark)
 def test_burning(env, amount):
@@ -26,10 +26,12 @@ def test_burning(env, amount):
     buyTokens(owner, weth.address, amount)
     ownerBalance = wethToken.balanceOf(owner)
     totalSupply = wethToken.totalSupply()
+
     approve(wethToken, weth.address, amount, owner)
     WETHFactory[-1].sell(amount, {
         'from': owner,
         'priority_fee': '10 wei'
     })
+    
     assert ownerBalance - amount == wethToken.balanceOf(owner) 
-    assert totalSupply == wethToken.totalSupply() + amount
+    assert totalSupply - amount == wethToken.totalSupply() 
