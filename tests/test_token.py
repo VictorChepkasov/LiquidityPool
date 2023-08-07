@@ -1,5 +1,5 @@
 import pytest
-from brownie import accounts, EtherTestToken
+from brownie import accounts, TestToken
 from scripts.scriptsPool import buyTokens, approve
 from scripts.deployToken import deployToken
 
@@ -13,7 +13,7 @@ def ownerAndFactory():
 @pytest.fixture()
 def testToken(ownerAndFactory):
     _, myToken = ownerAndFactory
-    return EtherTestToken.at(myToken.token())
+    return TestToken.at(myToken.token())
 
 @pytest.mark.parametrize('amountToBuy', amountToBuyMark)
 def test_buyingToken(ownerAndFactory, testToken, amountToBuy):
