@@ -1,4 +1,4 @@
-from brownie import accounts, LiquidityPool, EtherTestToken
+from brownie import accounts, LiquidityPool, TestToken
 from dotenv import load_dotenv
 from scripts.deployToken import deployToken
 
@@ -8,9 +8,9 @@ def main():
     owner = accounts[0]
     myToken = deployToken(owner)
     owner.transfer(myToken.address, '100 wei', priority_fee='1 wei')
-    etherTestToken = EtherTestToken.at(myToken.token())
+    testToken = TestToken.at(myToken.token())
     print(f'Token balance: {myToken.tokenBalance()}')
-    print(f'Owner balance: {etherTestToken.balanceOf(owner)}\n')
+    print(f'Owner balance: {testToken.balanceOf(owner)}\n')
     deployLiquidityPool(owner, owner, myToken.token())
 
 def deployLiquidityPool(_from, _eth, _myToken):
