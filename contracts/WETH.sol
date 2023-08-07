@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./ownable.sol";
 
-contract WETH is ERC20 {
+contract WrappedETH is ERC20 {
     using SafeERC20 for ERC20;
 
     constructor(address emiter) ERC20("Wrapped Ether", "WETH") {}
