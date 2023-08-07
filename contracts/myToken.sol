@@ -11,13 +11,11 @@ contract TestToken is ERC20 {
     }
 }
 
-contract testTokenFactory {
+contract testTokenFactory is Ownable {
     IERC20 public token;
-    address payable public owner;
 
     constructor() {
         token = new TestToken(address(this));
-        owner = payable(msg.sender);
     }
 
     function sell(uint _amountToSell) external {
