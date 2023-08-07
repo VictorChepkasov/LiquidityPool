@@ -23,7 +23,7 @@ contract WETHFactory is Ownable {
     ERC20 public token;
 
     constructor() {
-        token = new WETH(address(this));
+        token = new WrappedETH(address(this));
     }
 
     function sell(uint _amountToSell) external {
@@ -35,7 +35,7 @@ contract WETHFactory is Ownable {
         uint allowance = token.allowance(msg.sender, address(this));
         require(allowance >= _amountToSell, "Check allowance!");
 
-        WETH(address(token)).burn(msg.sender, _amountToSell);
+        WrappedETH(address(token)).burn(msg.sender, _amountToSell);
 
         payable(msg.sender).transfer(_amountToSell);
     }
@@ -44,6 +44,6 @@ contract WETHFactory is Ownable {
         uint tokenToBuy = msg.value; //1 eth == 1 token
         require(tokenToBuy > 0, "Not enough funds!");
 
-        WETH(address(token)).mint(msg.sender, tokenToBuy);
+        WrappedETH(address(token)).mint(msg.sender, tokenToBuy);
     }
 }
