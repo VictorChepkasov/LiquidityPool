@@ -14,10 +14,11 @@ def withdraw(_from, _token, _amount):
     })
     print('Transfer successful!')
 
-def exchange(_fromToken, _toToken, _fromAmount):
+def exchange(_from, _fromToken, _toToken, _fromAmount):
     LiquidityPool[-1].exchange(_fromToken, _toToken, _fromAmount, {
-        'from': _fromToken,
-        'priority_fee': '10 wei'
+        'from': _from,
+        'priority_fee': '10 wei',
+
     })
 
 def getExchangeRate(_from):
