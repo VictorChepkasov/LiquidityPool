@@ -15,6 +15,7 @@ contract WrappedETH is ERC20 {
     }
 
     function burn(address to, uint amount) public {
+        require(amount > 0, "You can't burn 0 tokens!");
         _burn(to, amount);
     }
 }
@@ -38,6 +39,10 @@ contract WETHFactory is Ownable {
         WrappedETH(address(token)).burn(msg.sender, _amountToSell);
 
         payable(msg.sender).transfer(_amountToSell);
+    }
+
+    function tokenBalance() public view {
+        token.balanceOf(address(this));
     }
 
     receive() external payable {
