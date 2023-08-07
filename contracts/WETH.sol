@@ -20,30 +20,30 @@ contract WETH is ERC20 {
 }
 
 contract WETHFactory is Ownable {
-    ERC20 public weth;
+    ERC20 public token;
 
     constructor() {
-        weth = new WETH(address(this));
+        token = new WETH(address(this));
     }
 
     function sell(uint _amountToSell) external {
         require(_amountToSell > 0 &&
-        weth.balanceOf(msg.sender) >= _amountToSell,
+        token.balanceOf(msg.sender) >= _amountToSell,
         "Incorrect amount!"
         );
 
-        uint allowance = weth.allowance(msg.sender, address(this));
+        uint allowance = token.allowance(msg.sender, address(this));
         require(allowance >= _amountToSell, "Check allowance!");
 
-        WETH(address(weth)).burn(msg.sender, _amountToSell);
+        WETH(address(token)).burn(msg.sender, _amountToSell);
 
         payable(msg.sender).transfer(_amountToSell);
     }
 
     receive() external payable {
-        uint wethToBuy = msg.value; //1 eth == 1 weth
-        require(wethToBuy > 0, "Not enough funds!");
+        uint tokenToBuy = msg.value; //1 eth == 1 token
+        require(tokenToBuy > 0, "Not enough funds!");
 
-        WETH(address(weth)).mint(msg.sender, wethToBuy);
+        WETH(address(token)).mint(msg.sender, tokenToBuy);
     }
 }
