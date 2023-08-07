@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./tokens.sol";
+import "./myToken.sol";
 
 contract LiquidityPool {
     using SafeERC20 for ERC20;
