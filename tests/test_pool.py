@@ -1,4 +1,5 @@
 import pytest
+from brownie import accounts
 from scripts.deployPool import deployLiquidityPool
 from scripts.scriptsPool import (
     createDeposit,
@@ -55,16 +56,25 @@ def test_withdraw(ownerAndFactories, testToken, deposit):
     assert testToken.balanceOf(owner) == ownerTokenBalance + deposit
     assert testToken.balanceOf(pool.address) == poolBalance - deposit
 
+@pytest.mark.parametrize('deposit', amountToBuyMark)
+def test_exchange(ownerAndFactories, testToken, wethToken, deposit, amount=10):
+    owner, myToken, weth = ownerAndFactories
+    buyTokens(owner, myToken.address, deposit*2)
+    print(f'MyToken balance: {testToken.balanceOf(owner.address)}')
+    pool = deployLiquidityPool(owner, weth.token(), myToken.token())
 
-# @pytest.mark.parametrize('deposit', amountToBuyMark)
-# def test_exchange(ownerAndFactories, testToken, deposit, amount=10):
-#     owner, myToken = ownerAndFactories
-#     buyTokens(owner, myToken.address, deposit)
-#     pool = deployLiquidityPool(owner, owner, myToken.token())
+    approve(testToken, pool.address, deposit, owner)
+    createDeposit(owner, myToken.token(), deposit)
 
-#     buyTokens(owner, owner, deposit*2)
+    buyTokens(owner, weth.address, deposit*2)
+    print(f'WETH Balance: {wethToken.balanceOf(owner.address)}')
 
-#     approve(testToken, pool.address, amount, owner)
-#     print(f'ToTokenBalance: {owner.balanceOf(pool.address)}')
-#     exchange(owner, testToken, owner, amount)
+    buyTokens(accounts[2], weth.address, deposit*2)
+    approve(wethToken, pool.address, deposit*2, accounts[2])
+    createDeposit(accounts[2], weth.token(), deposit)
+
+    approve(testToken, pool.address, amount, owner)
+    print(f'Pool TMT balance: {testToken.balanceOf(pool.address)}')
+    print(f'Pool WETH balance: {wethToken.balanceOf(pool.address)}')
+    exchange(owner, testToken, wethToken, amount)
     

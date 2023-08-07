@@ -38,7 +38,7 @@ contract LiquidityPool {
         uint toTokenBalance = toToken.balanceOf(address(this));
         require(
             fromTokenBalance >= toTokenBalance,
-            "You don't have money :("
+            "We don't have tokens :("
         );
 
         uint exchangeRate = getExchangeRate();
