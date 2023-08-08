@@ -26,13 +26,11 @@ def tokenAndFactory(request):
     return owner, tokenFactory, token, request.param
 
 @pytest.fixture(params=amountToBuyMark)
-def pool(request):
-    owner = accounts[0]
+def pool(request, tokenAndFactory):
+    owner, tokenFactory, _, _ = tokenAndFactory
     tmtFactory = deployToken(owner)
-    tmt = TestMyToken.at(tmtFactory.token())
     wethFactory = deployWETH(owner)
-    weth = WrappedETH.at(wethFactory.token())
-    buyTokens(owner, tmtFactory.address, request.param)
+    buyTokens(owner, tokenFactory.address, request.param)
 
     return deployLiquidityPool(owner, wethFactory.token(), tmtFactory.token())
 
@@ -51,53 +49,68 @@ def test_deployPool(amountToBuy):
         'amountToBuy, deposit',
         [pytest.param((0, 0), "Your don't have tokens :(", marks=pytest.mark.xfail), pytest.param((100, 120), "Transfer amount exceeds balance!", marks=pytest.mark.xfail), (100, 50)]
 )
-def test_createDeposit(ownerAndFactories, testToken, amountToBuy, deposit):
-    owner, myToken, weth = ownerAndFactories
-    buyTokens(owner, myToken.address, amountToBuy)
-    pool = deployLiquidityPool(owner, weth.token(), myToken.token())
-    ownerTokenBalance = testToken.balanceOf(owner)
-    poolBalance = testToken.balanceOf(pool.address)
+def test_createDeposit(tokenAndFactory, amountToBuy, deposit):
+    owner, tokenFactory, token, requestParam = tokenAndFactory
+    buyTokens(owner, tokenFactory.address, amountToBuy)
+    if requestParam == 'TMT':
+        pool = deployLiquidityPool(owner, deployWETH(owner).token(), tokenFactory.token())
+    else:
+        pool = deployLiquidityPool(owner, tokenFactory.token(), deployToken(owner).token())
+    ownerTokenBalance = token.balanceOf(owner)
+    poolBalance = token.balanceOf(pool.address)
 
-    approve(testToken, pool.address, deposit, owner)
-    createDeposit(owner, myToken.token(), deposit)
+    approve(token, pool.address, deposit, owner)
+    createDeposit(owner, tokenFactory.token(), deposit)
 
-    assert testToken.balanceOf(owner) == ownerTokenBalance - deposit
-    assert testToken.balanceOf(pool.address) == poolBalance + deposit
-
-# @pytest.mark.parametrize('deposit', amountToBuyMark)
-# def test_withdraw(ownerAndFactories, testToken, deposit):
-#     owner, myToken, weth = ownerAndFactories
-#     buyTokens(owner, myToken.address, deposit)
-#     pool = deployLiquidityPool(owner, weth.token(), myToken.token())
-#     approve(testToken, pool.address, deposit, owner)
-#     createDeposit(owner, myToken.token(), deposit)
-
-#     ownerTokenBalance = testToken.balanceOf(owner)
-#     poolBalance = testToken.balanceOf(pool.address)
-#     withdraw(owner, myToken.token(), deposit)
-
-#     assert testToken.balanceOf(owner) == ownerTokenBalance + deposit
-#     assert testToken.balanceOf(pool.address) == poolBalance - deposit
+    assert token.balanceOf(owner) == ownerTokenBalance - deposit
+    assert token.balanceOf(pool.address) == poolBalance + deposit
 
 # @pytest.mark.parametrize('deposit', amountToBuyMark)
-# def test_exchange(ownerAndFactories, testToken, wethToken, deposit, amount=10):
-#     owner, myToken, weth = ownerAndFactories
-#     buyTokens(owner, myToken.address, deposit*2)
-#     print(f'MyToken balance: {testToken.balanceOf(owner.address)}')
-#     pool = deployLiquidityPool(owner, weth.token(), myToken.token())
+# депозит равен 10, задача теста вывести его на счёт вкладчика
+def test_withdraw(tokenAndFactory, deposit=10):
+    owner, tokenFactory, token, requestParam = tokenAndFactory
+    buyTokens(owner, tokenFactory.address, deposit)
+    if requestParam == 'TMT':
+        pool = deployLiquidityPool(owner, deployWETH(owner).token(), tokenFactory.token())
+    else:
+        pool = deployLiquidityPool(owner, tokenFactory.token(), deployToken(owner).token())
+    approve(token, pool.address, deposit, owner)
+    createDeposit(owner, tokenFactory.token(), deposit)
 
-#     approve(testToken, pool.address, deposit, owner)
-#     createDeposit(owner, myToken.token(), deposit)
+    ownerTokenBalance = token.balanceOf(owner)
+    poolBalance = token.balanceOf(pool.address)
+    withdraw(owner, tokenFactory.token(), deposit)
 
-#     buyTokens(owner, weth.address, deposit*2)
-#     print(f'WETH Balance: {wethToken.balanceOf(owner.address)}')
+    assert token.balanceOf(owner) == ownerTokenBalance + deposit
+    assert token.balanceOf(pool.address) == poolBalance - deposit
 
-#     buyTokens(accounts[2], weth.address, deposit*2)
-#     approve(wethToken, pool.address, deposit*2, accounts[2])
-#     createDeposit(accounts[2], weth.token(), deposit)
+@pytest.mark.parametrize('deposit', amountToBuyMark)
+def test_exchange(tokenAndFactory, deposit, amount=10):
+    owner, _, _, requestParam = tokenAndFactory
+    if requestParam == 'TMT':
+        _, toTokenFactory, toToken, _ = tokenAndFactory
+        fromTokenFactory = deployWETH(owner)
+        fromToken = WrappedETH.at(fromTokenFactory.token())
+    else:
+        _, toTokenFactory, toToken, _ = tokenAndFactory
+        fromTokenFactory = deployToken(owner)
+        fromToken = TestMyToken.at(fromTokenFactory.token())
 
-#     approve(testToken, pool.address, amount, owner)
-#     print(f'Pool TMT balance: {testToken.balanceOf(pool.address)}')
-#     print(f'Pool WETH balance: {wethToken.balanceOf(pool.address)}')
-#     exchange(owner, testToken, wethToken, amount)
+    buyTokens(owner, toTokenFactory.address, deposit*2)
+    pool = deployLiquidityPool(owner, fromTokenFactory.token(), toTokenFactory.token())
+
+    approve(toToken, pool.address, deposit, owner)
+    createDeposit(owner, toTokenFactory.token(), deposit)
+
+    buyTokens(owner, fromTokenFactory.address, deposit*2)
+    print(f'WETH Balance: {fromToken.balanceOf(owner.address)}')
+
+    buyTokens(accounts[2], fromTokenFactory.address, deposit*2)
+    approve(fromToken, pool.address, deposit*2, accounts[2])
+    createDeposit(accounts[2], fromTokenFactory.token(), deposit)
+
+    approve(toToken, pool.address, amount, owner)
+    print(f'Pool TMT balance: {toToken.balanceOf(pool.address)}')
+    print(f'Pool WETH balance: {fromToken.balanceOf(pool.address)}')
+    exchange(owner, toToken, fromToken, amount)
     

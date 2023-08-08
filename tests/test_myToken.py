@@ -41,10 +41,10 @@ def test_buyingToken(amountToBuy, tokenAndFactory):
 def test_sellingToken(tokenAndFactory, amountToSell):
     owner, tokenFactory, token, request = tokenAndFactory
     buyTokens(owner, tokenFactory.address, 20)
-    
-    approve(token, tokenFactory.address, amountToSell, owner)
     ownerTokenBalance = token.balanceOf(owner)
     tokenBalance = tokenFactory.tokenBalance()
+    
+    approve(token, tokenFactory.address, amountToSell, owner)
     tokenFactory.sell(amountToSell, {'priority_fee': '1 wei'})
     newTokenBalance = tokenBalance  if request == 'WETH' else tokenBalance + amountToSell
     
