@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import "./WETH.sol";
 
-contract TestToken is ERC20 {
+contract TestMyToken is ERC20 {
     using SafeERC20 for ERC20;
 
     constructor(address emiter) ERC20("Test MyToken", "TMT") {
@@ -11,11 +11,11 @@ contract TestToken is ERC20 {
     }
 }
 
-contract testTokenFactory is Ownable {
+contract TestMyTokenFactory is Ownable {
     IERC20 public token;
 
     constructor() {
-        token = new TestToken(address(this));
+        token = new TestMyToken(address(this));
     }
 
     function sell(uint _amountToSell) external {

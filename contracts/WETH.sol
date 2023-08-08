@@ -41,8 +41,8 @@ contract WETHFactory is Ownable {
         payable(msg.sender).transfer(_amountToSell);
     }
 
-    function tokenBalance() public view {
-        token.balanceOf(address(this));
+    function tokenBalance() public view returns(uint) {
+        return token.balanceOf(address(this));
     }
 
     receive() external payable {

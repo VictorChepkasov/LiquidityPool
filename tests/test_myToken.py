@@ -1,49 +1,53 @@
 import pytest
-from brownie import accounts, TestToken, WrappedETH
+from brownie import accounts, TestMyToken, WrappedETH
 from scripts.scriptsPool import buyTokens, approve
-from scripts.deployToken import deployToken
+from scripts.deployMyToken import deployToken
 from scripts.deployWETH import deployWETH
 
-amountToBuyMark = [pytest.param(0, marks=pytest.mark.xfail), 10, 1000, pytest.param(100000, marks=pytest.mark.xfail)]
+'''
+tmt - контракт фабрики токена Test My Token (TMT)
+weth - контракт фабрики токена weth
+tmtToken - контракт самого токена 
+wethToken - контракт самого токена
+'''
 
-@pytest.fixture()
-def ownerAndFactories():
+@pytest.fixture(params=['TMT', 'WETH'])
+def tokenAndFactory(request):
     owner = accounts[0]
-    return owner, deployToken(owner), deployWETH(owner)
+    if request.param == 'TMT':
+        tokenFactory = deployToken(owner)
+        token = TestMyToken.at(tokenFactory.token())
+    else:
+        tokenFactory = deployWETH(owner)
+        token = WrappedETH.at(tokenFactory.token())
+    return owner, tokenFactory, token, request.param
 
-@pytest.fixture()
-def testToken(ownerAndFactories):
-    _, myToken, _ = ownerAndFactories
-    return TestToken.at(myToken.token())
-
-@pytest.fixture()
-def wethToken(ownerAndFactories):
-    _, _, weth = ownerAndFactories
-    return WrappedETH.at(weth.token())
-
-@pytest.mark.parametrize('amountToBuy', amountToBuyMark)
-def test_buyingToken(ownerAndFactories, testToken, amountToBuy):
-    owner, myToken, weth = ownerAndFactories
+@pytest.mark.parametrize('amountToBuy', [pytest.param(0, marks=pytest.mark.xfail), 10, pytest.param(100000, marks=pytest.mark.xfail)])
+def test_buyingToken(amountToBuy, tokenAndFactory):
+    owner, tokenFactory, token, request = tokenAndFactory
     ownerBalance = owner.balance()
 
-    buyTokens(owner, myToken.address, amountToBuy)
-    tokenBalance = myToken.tokenBalance()
-    ownerTokenBalance = testToken.balanceOf(owner)
+    tokenBalance = tokenFactory.tokenBalance()
+    ownerTokenBalance = token.balanceOf(owner)
+    buyTokens(owner, tokenFactory.address, amountToBuy)
+    newTokenBalance = tokenFactory.tokenBalance() + amountToBuy if request == 'TMT' else 0
 
-    assert tokenBalance == 10000 - amountToBuy
-    assert ownerTokenBalance == amountToBuy
+    # xpassed при WETH-100000, т.к. weth выпускает и сжигает токены, но не хранит их
+    assert tokenBalance == newTokenBalance
+    assert ownerTokenBalance == token.balanceOf(owner) - amountToBuy
     assert owner.balance() <= ownerBalance
 
-@pytest.mark.parametrize('amountToBuy', amountToBuyMark)
-def test_sellingToken(ownerAndFactories, testToken, amountToBuy, amountToSell=9):
-    owner, myToken, weth = ownerAndFactories
-    buyTokens(owner, myToken.address, amountToBuy)
+@pytest.mark.parametrize('amountToSell', [pytest.param(0, marks=pytest.mark.xfail), 5])
+def test_sellingToken(tokenAndFactory, amountToSell):
+    owner, tokenFactory, token, request = tokenAndFactory
+    buyTokens(owner, tokenFactory.address, 20)
     
-    approve(testToken, myToken.address, amountToSell, owner)
-    ownerTokenBalance = testToken.balanceOf(owner)
-    tokenBalance = myToken.tokenBalance()
-    myToken.sell(amountToSell, {'priority_fee': '1 wei'})
+    approve(token, tokenFactory.address, amountToSell, owner)
+    ownerTokenBalance = token.balanceOf(owner)
+    tokenBalance = tokenFactory.tokenBalance()
+    tokenFactory.sell(amountToSell, {'priority_fee': '1 wei'})
+    newTokenBalance = tokenBalance  if request == 'WETH' else tokenBalance + amountToSell
     
-    assert myToken.tokenBalance() == tokenBalance + amountToSell
-    assert testToken.balanceOf(owner) == ownerTokenBalance - amountToSell
+    assert tokenFactory.tokenBalance() == newTokenBalance
+    assert token.balanceOf(owner) == ownerTokenBalance - amountToSell
 
