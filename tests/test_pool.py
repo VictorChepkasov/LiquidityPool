@@ -53,9 +53,11 @@ def test_createDeposit(tokenAndFactory, amountToBuy, deposit):
     owner, tokenFactory, token, requestParam = tokenAndFactory
     buyTokens(owner, tokenFactory.address, amountToBuy)
     if requestParam == 'TMT':
-        pool = deployLiquidityPool(owner, deployWETH(owner).token(), tokenFactory.token())
+        tmtFactory, wethFactory = tokenFactory, deployWETH(owner)
     else:
-        pool = deployLiquidityPool(owner, tokenFactory.token(), deployToken(owner).token())
+        tmtFactory, wethFactory = deployToken(owner), tokenFactory
+    pool = deployLiquidityPool(owner, wethFactory.token(), tmtFactory.token())
+
     ownerTokenBalance = token.balanceOf(owner)
     poolBalance = token.balanceOf(pool.address)
 
@@ -65,15 +67,16 @@ def test_createDeposit(tokenAndFactory, amountToBuy, deposit):
     assert token.balanceOf(owner) == ownerTokenBalance - deposit
     assert token.balanceOf(pool.address) == poolBalance + deposit
 
-# @pytest.mark.parametrize('deposit', amountToBuyMark)
 # депозит равен 10, задача теста вывести его на счёт вкладчика
 def test_withdraw(tokenAndFactory, deposit=10):
     owner, tokenFactory, token, requestParam = tokenAndFactory
     buyTokens(owner, tokenFactory.address, deposit)
     if requestParam == 'TMT':
-        pool = deployLiquidityPool(owner, deployWETH(owner).token(), tokenFactory.token())
+        tmtFactory, wethFactory = tokenFactory, deployWETH(owner)
     else:
-        pool = deployLiquidityPool(owner, tokenFactory.token(), deployToken(owner).token())
+        tmtFactory, wethFactory = deployToken(owner), tokenFactory
+    pool = deployLiquidityPool(owner, wethFactory.token(), tmtFactory.token())
+
     approve(token, pool.address, deposit, owner)
     createDeposit(owner, tokenFactory.token(), deposit)
 
