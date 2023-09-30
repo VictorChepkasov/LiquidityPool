@@ -2,6 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "./WETH.sol";
+import "./ownable.sol";
 
 contract TestMyToken is ERC20 {
     using SafeERC20 for ERC20;
@@ -34,15 +35,15 @@ contract TestMyTokenFactory is Ownable {
     }
 
     function tokenBalance() public view returns(uint) {
-        return token.balanceOf(address(this));
+        return token.balanceOf(msg.sender);
     }
 
     receive() external payable {
-        uint tokensToBuy = msg.value; //1 wei == 1 token
-        require(tokensToBuy > 0, "Not enough funds!");
+        //1 wei == 1 token
+        require(msg.value > 0, "Not enough funds!");
 
-        require(tokenBalance() >= tokensToBuy, "Not enough tokens!");
+        require(tokenBalance() >= msg.value, "Not enough tokens!");
 
-        token.transfer(msg.sender, tokensToBuy);
+        token.transfer(msg.sender, msg.value);
     }
 }

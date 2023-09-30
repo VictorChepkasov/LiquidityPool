@@ -1,5 +1,5 @@
 const Ownable = artifacts.require('Ownable');
 
-module.exports = function(deployer) {
+module.exports = (deployer) => {
     deployer.deploy(Ownable);
 };

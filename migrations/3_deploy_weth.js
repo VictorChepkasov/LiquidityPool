@@ -1,5 +1,5 @@
-const WETHFactory = artifacts.require('WETHFactory');
+const WETH = artifacts.require('WrappedETH');
 
 module.exports = (deployer) => {
-    deployer.deploy(WETHFactory);
+    deployer.deploy(WETH);
 };
