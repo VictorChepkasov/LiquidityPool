@@ -42,7 +42,7 @@ contract TestMyTokenFactory is Ownable {
         //1 wei == 1 token
         require(msg.value > 0, "Not enough funds!");
 
-        require(tokenBalance() >= msg.value, "Not enough tokens!");
+        // require(tokenBalance() >= msg.value, "Not enough tokens!");
 
         token.transfer(msg.sender, msg.value);
     }
