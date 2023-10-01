@@ -1,6 +1,6 @@
 const WETH = artifacts.require("WrappedETH")
 const TMToken = artifacts.require("TestMyToken")
-const TMT = artifacts.require('TestMyTokenFactory');
+const TMT = artifacts.require('TestMyTokenFactory')
 
 contract("WrappedETH Test", async () => {
     it("Wrap ethers", async () => {
@@ -48,17 +48,15 @@ contract("MyToken Test", async () => {
 
     it("Selling tokens", async () => {
         const tmt = await TMT.deployed()
+        const tokenInstance = await tmt.token()
+            .then((token) => {return TMToken.at(token)})
         const accounts = await web3.eth.getAccounts()
-        const token = await TMToken.deployed()
-
-        await token.approve(tmt.address, 500, {from: accounts[0]})
-
-        await tmt.sell(250, {
-            from: accounts[0]
-        })
-
-        const balance = await tmt.tokenBalance(accounts[0])
-
-        assert.equal(balance.toNumber(), 250)
+        
+        await tokenInstance.approve(tmt.address, 250, {from: accounts[0]})
+        await tmt.sell(250, {from: accounts[0]})
+        
+        const balance = await tokenInstance.balanceOf(accounts[0]).then((balance) => {return balance.toNumber()})
+        
+        assert.equal(balance, 250)
     })
 })
