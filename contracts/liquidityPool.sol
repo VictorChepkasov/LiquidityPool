@@ -14,9 +14,10 @@ contract LiquidityPool {
         myToken = _myToken;
     }
 
-    function createDeposit(ERC20 token, uint amount) public {
+    function createDeposit(ERC20 token, uint amount) public returns(bool) {
         bool txResult = token.transferFrom(msg.sender, address(this), amount);
         require(txResult, "Transfer failed!");
+        return txResult;
     }
 
     function withdraw(ERC20 token, uint amount) public {
