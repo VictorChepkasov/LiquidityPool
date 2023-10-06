@@ -78,8 +78,45 @@ contract("Liquidity Pool", async () => {
         })
 
         await tokenInstance.approve(pool.address, 100, {from: accounts[0]})
-        const createdPool = await pool.createDeposit.call(tokenInstance.address, 100, {from: accounts[0]})
+        const createdPool = await pool.createDeposit(tokenInstance.address, 100, {from: accounts[0]})
         
-        assert.isTrue(createdPool)
+        assert.isTrue(createdPool.receipt.status)
     })
+
+    it("Withdraw", async () => {
+        const amount = 500
+        const pool = await LiquidityPool.deployed()
+        const tokenInstance = await TMT.deployed()
+            .then((tmt) => {return tmt.token()})
+            .then((token) => {return TMToken.at(token)})
+        const accounts = await web3.eth.getAccounts()
+        const ownerBalance = await tokenInstance.balanceOf(accounts[0]).then((balance) => {return balance.toNumber()})
+        const poolBalance = await tokenInstance.balanceOf(pool.address).then((balance) => {return balance.toNumber()})
+
+        await TMT.deployed().then((tmt) => {
+            tmt.sendTransaction({
+                from: accounts[0],
+                value: amount
+            })
+        })    
+
+        await tokenInstance.approve(pool.address, amount, {from: accounts[0]})
+        await pool.createDeposit(tokenInstance.address, amount, {from: accounts[0]})
+        await pool.withdraw(tokenInstance.address, amount, {from: accounts[0]})
+
+        assert.equal(
+            ownerBalance + amount,
+            await tokenInstance.balanceOf(accounts[0]).then((balance) => {return balance.toNumber()})
+        )
+        assert.equal(
+            poolBalance,
+            await tokenInstance.balanceOf(pool.address).then((balance) => {return balance.toNumber()})
+        )
+    })
+
+    // it("Exchange", async () => {
+        
+
+        
+    // })
 })
