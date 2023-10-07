@@ -108,10 +108,4 @@ contract("Liquidity Pool", (accounts) => {
             await tokenInstance.balanceOf(pool.address).then((balance) => {return balance.toNumber()})
         )
     })
-
-    // it("Exchange", async () => {
-        
-
-        
-    // })
 })
