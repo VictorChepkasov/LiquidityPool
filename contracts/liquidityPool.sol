@@ -6,12 +6,27 @@ import "./myToken.sol";
 contract LiquidityPool {
     using SafeERC20 for ERC20;
 
+    uint private constant timeWindow = 1 minutes;
+    uint private constant limit = 15;
+    uint private counter;
+    uint private lastCallTimestamp;
+
     ERC20 public eth;
     ERC20 public myToken;
 
     constructor(ERC20 _eth, ERC20 _myToken) {
         eth = _eth;
         myToken = _myToken;
+    }
+
+    modifier rateLimit() {
+        if (block.timstamp >= lastCallTimestamp + timeWindow) {
+            counter = 0;
+            lastCallTimestamp = block.timestamp;
+        }
+        require(counter < limit, "Limit reached!");
+        _;
+        counter++;
     }
 
     function createDeposit(ERC20 token, uint amount) public returns(bool) {
@@ -25,7 +40,7 @@ contract LiquidityPool {
         require(txResult, "Transfer failed!");
     }
 
-    function exchange(ERC20 fromToken, ERC20 toToken, uint fromAmount) public {
+    function exchange(ERC20 fromToken, ERC20 toToken, uint fromAmount) public rateLimit {
         require(
             fromToken == eth || fromToken == myToken, 
             "Invailid fromToken!"
