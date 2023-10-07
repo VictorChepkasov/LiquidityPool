@@ -3,10 +3,9 @@ const TMToken = artifacts.require("TestMyToken")
 const TMT = artifacts.require('TestMyTokenFactory')
 const LiquidityPool = artifacts.require('LiquidityPool');
 
-contract("WrappedETH Test", async () => {
+contract("WrappedETH Test", (accounts) => {
     it("Wrap ethers", async () => {
         const weth = await WETH.deployed()
-        const accounts = await web3.eth.getAccounts()
 
         await weth.deposit({
             from: accounts[0],
@@ -20,7 +19,6 @@ contract("WrappedETH Test", async () => {
 
     it("Withdraw ethers", async () => {
         const weth = await WETH.deployed()
-        const accounts = await web3.eth.getAccounts()
 
         await weth.withdraw(1000000, {
             from: accounts[0]
@@ -32,10 +30,9 @@ contract("WrappedETH Test", async () => {
     })
 })
 
-contract("MyToken Test", async () => {
+contract("MyToken Test", (accounts) => {
     it("Buying tokens", async () => {
         const tmt = await TMT.deployed()
-        const accounts = await web3.eth.getAccounts()
 
         await tmt.sendTransaction({
             from: accounts[0],
@@ -51,7 +48,6 @@ contract("MyToken Test", async () => {
         const tmt = await TMT.deployed()
         const tokenInstance = await tmt.token()
             .then((token) => {return TMToken.at(token)})
-        const accounts = await web3.eth.getAccounts()
         
         await tokenInstance.approve(tmt.address, 250, {from: accounts[0]})
         await tmt.sell(250, {from: accounts[0]})
@@ -62,13 +58,12 @@ contract("MyToken Test", async () => {
     })
 })
 
-contract("Liquidity Pool", async () => {
+contract("Liquidity Pool", (accounts) => {
     it("Create deposit", async () => {
         const pool = await LiquidityPool.deployed()
         const tokenInstance = await TMT.deployed()
             .then((tmt) => {return tmt.token()})
             .then((token) => {return TMToken.at(token)})
-        const accounts = await web3.eth.getAccounts()
 
         await TMT.deployed().then((tmt) => {
             tmt.sendTransaction({
@@ -85,20 +80,20 @@ contract("Liquidity Pool", async () => {
 
     it("Withdraw", async () => {
         const amount = 500
-        const pool = await LiquidityPool.deployed()
-        const tokenInstance = await TMT.deployed()
-            .then((tmt) => {return tmt.token()})
+        const tmt = await TMT.new()
+        const pool = await LiquidityPool.new(
+            await WETH.new().then((weth) => {return weth.address}),
+            await tmt.token()
+        )
+        const tokenInstance = await tmt.token()
             .then((token) => {return TMToken.at(token)})
-        const accounts = await web3.eth.getAccounts()
         const ownerBalance = await tokenInstance.balanceOf(accounts[0]).then((balance) => {return balance.toNumber()})
         const poolBalance = await tokenInstance.balanceOf(pool.address).then((balance) => {return balance.toNumber()})
-
-        await TMT.deployed().then((tmt) => {
-            tmt.sendTransaction({
+        
+        await tmt.sendTransaction({
                 from: accounts[0],
                 value: amount
             })
-        })    
 
         await tokenInstance.approve(pool.address, amount, {from: accounts[0]})
         await pool.createDeposit(tokenInstance.address, amount, {from: accounts[0]})
